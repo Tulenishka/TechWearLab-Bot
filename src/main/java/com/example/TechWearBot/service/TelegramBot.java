@@ -85,8 +85,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendTicket(update.getMessage());
                     break;
 
-                case "/":
-
+                case "/lotterytime":
+                    
                     break;
 
                 default:
