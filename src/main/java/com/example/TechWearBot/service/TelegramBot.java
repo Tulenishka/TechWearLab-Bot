@@ -35,7 +35,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             "Для регистрации в розыгрыше Вы можите использовать команду /lottery (необходимое условие - быть участником оффициального канала Teckwear Lab: t.me/TechWearLab).\n\n" +
             "Команда для показа номера участника: /ticket. \n\n" +
             "Команда для показа времени до проведения розыгрыша: /lotterytime \n\n" +
-            "Любые другие вопросы можно задать консультанту: *Ссылка на живого человека*";
+            "Любые другие вопросы можно задать консультанту: @VladislavTechWear";
 
     public TelegramBot(BotConfig config){
         this.config = config;
@@ -125,6 +125,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.info("Пользователь уже был");
         }
     }
+
 
     private void startCommandReceived(long chatId, String name) {
         String answer = "Ну привет, " + name + ", наконец-то кто-то дробрался пощупать бота";
