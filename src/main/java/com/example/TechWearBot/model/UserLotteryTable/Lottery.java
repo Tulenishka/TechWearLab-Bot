@@ -1,4 +1,4 @@
-package com.example.TechWearBot.model.LotteryTable;
+package com.example.TechWearBot.model.UserLotteryTable;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

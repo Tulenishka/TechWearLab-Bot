@@ -2,8 +2,8 @@ package com.example.TechWearBot.service;
 
 
 import com.example.TechWearBot.config.BotConfig;
-import com.example.TechWearBot.model.LotteryTable.Lottery;
-import com.example.TechWearBot.model.LotteryTable.LotteryRepository;
+import com.example.TechWearBot.model.UserLotteryTable.Lottery;
+import com.example.TechWearBot.model.UserLotteryTable.LotteryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

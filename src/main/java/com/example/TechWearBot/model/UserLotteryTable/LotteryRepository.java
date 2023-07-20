@@ -1,7 +1,6 @@
-package com.example.TechWearBot.model.LotteryTable;
+package com.example.TechWearBot.model.UserLotteryTable;
 
 
-import com.example.TechWearBot.model.LotteryTable.Lottery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
