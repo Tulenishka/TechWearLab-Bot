@@ -86,7 +86,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
 
                 case "/lotterytime":
-                    
+
                     break;
 
                 default:
