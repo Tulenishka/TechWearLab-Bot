@@ -9,14 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
+import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +82,24 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
 
                 case "/lottery":
-                    registerLottery(update.getMessage());
+                    User user = update.getMessage().getFrom();
+                    var userId = user.getId();
+                    GetChatMember getMember = new GetChatMember();
+                    getMember.setUserId(userId);
+                    getMember.setChatId("-1001871441739");
+                    ChatMember theChatMember;
+                    try {
+                        theChatMember = execute(getMember);
+                        sendMessage(chatId, "Status: " + theChatMember.getStatus());
+                        if ("left".equalsIgnoreCase(theChatMember.getStatus())) {
+                            sendMessage(chatId, "Вам необходимо подписаться на канал t.me/TechWearLab");
+                        } else {
+                            registerLottery(update.getMessage());
+                        }
+                    } catch (TelegramApiException e){
+                        log.error("Ошибка:" + e.getMessage());
+                    }
+
                     break;
 
                 case "/ticket":
@@ -122,6 +143,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         } else {
             var chatId = message.getChatId();
             sendMessage(chatId, "Вы уже участвуете в розыгрыше, номер Вашего билета: "+ lotteryRepository.getTicket(chatId));
+            sendMessage(chatId, "Время сообщения: " + message.getDate());
             log.info("Пользователь уже был");
         }
     }
@@ -136,6 +158,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         sendMessage(chatId,helpText);
         log.info("Пояснительная информация доставлена.");
     }
+
+
+
+
     private void sendMessage(long chatId, String textToSend){
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
