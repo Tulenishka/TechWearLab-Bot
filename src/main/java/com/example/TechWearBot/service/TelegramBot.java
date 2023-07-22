@@ -90,16 +90,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                     ChatMember theChatMember;
                     try {
                         theChatMember = execute(getMember);
-                        sendMessage(chatId, "Status: " + theChatMember.getStatus());
                         if ("left".equalsIgnoreCase(theChatMember.getStatus())) {
-                            sendMessage(chatId, "Вам необходимо подписаться на канал t.me/TechWearLab");
+                            sendMessage(chatId, "Для участия в розыгрыше Вам необходимо подписаться на канал t.me/TechWearLab");
                         } else {
                             registerLottery(update.getMessage());
                         }
                     } catch (TelegramApiException e){
                         log.error("Ошибка:" + e.getMessage());
                     }
-
                     break;
 
                 case "/ticket":
