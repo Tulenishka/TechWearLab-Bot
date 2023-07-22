@@ -16,7 +16,13 @@ public class LotteryStatus {
 
     private Boolean lotteryActive;
 
-    private Integer lotteryDate;
+    private Integer lotteryDateDay;
+
+    private Integer lotteryDateMonth;
+
+    private Integer lotteryDateHour;
+
+    private Integer lotteryDateMinute;
 
     private Integer lotteryWinnerTicket;
 
@@ -44,12 +50,36 @@ public class LotteryStatus {
         this.lotteryActive = lotteryActive;
     }
 
-    public Integer getLotteryDate() {
-        return lotteryDate;
+    public Integer getLotteryDateDay() {
+        return lotteryDateDay;
     }
 
-    public void setLotteryDate(Integer lotteryDate) {
-        this.lotteryDate = lotteryDate;
+    public void setLotteryDateDay(Integer lotteryDateDay) {
+        this.lotteryDateDay = lotteryDateDay;
+    }
+
+    public Integer getLotteryDateMonth() {
+        return lotteryDateMonth;
+    }
+
+    public void setLotteryDateMonth(Integer lotteryDateMonth) {
+        this.lotteryDateMonth = lotteryDateMonth;
+    }
+
+    public Integer getLotteryDateHour() {
+        return lotteryDateHour;
+    }
+
+    public void setLotteryDateHour(Integer lotteryDateHour) {
+        this.lotteryDateHour = lotteryDateHour;
+    }
+
+    public Integer getLotteryDateMinute() {
+        return lotteryDateMinute;
+    }
+
+    public void setLotteryDateMinute(Integer lotteryDateMinute) {
+        this.lotteryDateMinute = lotteryDateMinute;
     }
 
     public Integer getLotteryWinnerTicket() {
@@ -66,7 +96,10 @@ public class LotteryStatus {
                 "lotteryId=" + lotteryId +
                 ", lotteryCreatorId=" + lotteryCreatorId +
                 ", lotteryActive=" + lotteryActive +
-                ", lotteryDate=" + lotteryDate +
+                ", lotteryDateDay=" + lotteryDateDay +
+                ", lotteryDateMonth=" + lotteryDateMonth +
+                ", lotteryDateHour=" + lotteryDateHour +
+                ", lotteryDateMinute=" + lotteryDateMinute +
                 ", lotteryWinnerTicket=" + lotteryWinnerTicket +
                 '}';
     }

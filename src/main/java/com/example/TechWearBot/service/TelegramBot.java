@@ -2,6 +2,8 @@ package com.example.TechWearBot.service;
 
 
 import com.example.TechWearBot.config.BotConfig;
+import com.example.TechWearBot.model.LotteryTableStatus.LotteryStatus;
+import com.example.TechWearBot.model.LotteryTableStatus.LotteryStatusRepository;
 import com.example.TechWearBot.model.UserLotteryTable.Lottery;
 import com.example.TechWearBot.model.UserLotteryTable.LotteryRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +22,6 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
-import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private LotteryRepository lotteryRepository;
+    @Autowired
+    private LotteryStatusRepository lotteryStatusRepository;
     final BotConfig config;
 
     static final String helpText = "Этот бот поможет Вам подобрать товар или принять участие в розыгрыше от Techwear Lab.\n\n" +
@@ -71,47 +74,70 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            switch (messageText) {
+            if (messageText.contains("/setlotterydata")) {
+                var data = messageText.substring(messageText.indexOf(" "));
+                sendMessage(chatId, "Время: " + data);
+                saveData(data,update);
+            } else {
+                switch (messageText) {
+                    case "/start":
+                        startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                        break;
 
-                case "/start":
-                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                    break;
+                    case "/help":
+                        helpMessage(chatId);
+                        break;
 
-                case "/help":
-                    helpMessage(chatId);
-                    break;
-
-                case "/lottery":
-                    User user = update.getMessage().getFrom();
-                    var userId = user.getId();
-                    GetChatMember getMember = new GetChatMember();
-                    getMember.setUserId(userId);
-                    getMember.setChatId("-1001871441739");
-                    ChatMember theChatMember;
-                    try {
-                        theChatMember = execute(getMember);
-                        if ("left".equalsIgnoreCase(theChatMember.getStatus())) {
-                            sendMessage(chatId, "Для участия в розыгрыше Вам необходимо подписаться на канал t.me/TechWearLab");
-                        } else {
-                            registerLottery(update.getMessage());
+                    case "/lottery":
+                        User user = update.getMessage().getFrom();
+                        var userId = user.getId();
+                        GetChatMember getMember = new GetChatMember();
+                        getMember.setUserId(userId);
+                        getMember.setChatId("-1001871441739");
+                        ChatMember theChatMember;
+                        try {
+                            theChatMember = execute(getMember);
+                            if ("left".equalsIgnoreCase(theChatMember.getStatus())) {
+                                sendMessage(chatId, "Для участия в розыгрыше Вам необходимо подписаться на канал t.me/TechWearLab");
+                            } else {
+                                registerLottery(update.getMessage());
+                            }
+                        } catch (TelegramApiException e) {
+                            log.error("Ошибка:" + e.getMessage());
                         }
-                    } catch (TelegramApiException e){
-                        log.error("Ошибка:" + e.getMessage());
-                    }
-                    break;
+                        break;
 
-                case "/ticket":
-                    sendTicket(update.getMessage());
-                    break;
+                    case "/ticket":
+                        sendTicket(update.getMessage());
+                        break;
 
-                case "/lotterytime":
+                    case "/setlottery":
+                        createLottery(chatId);
+                        break;
 
-                    break;
-
-                default:
+                    default:
                         sendMessage(chatId, "Неизвестная команда, проверьте правильность написания в /help");
+                }
             }
         }
+    }
+
+    private void saveData(String data,Update update){
+        User user = update.getMessage().getFrom();
+        var userId = user.getId();
+        LotteryStatus lotteryStatus = new LotteryStatus();
+        var day = data.substring(1,3);
+        var month = data.substring(3,5);
+        var hour = data.substring(5,7);
+        var minute = data.substring(7);
+        lotteryStatus.setLotteryId(1);
+        lotteryStatus.setLotteryActive(true);
+        lotteryStatus.setLotteryCreatorId(userId);
+        lotteryStatus.setLotteryDateDay(Integer.valueOf(day));
+        lotteryStatus.setLotteryDateMonth(Integer.valueOf(month));
+        lotteryStatus.setLotteryDateHour(Integer.valueOf(hour));
+        lotteryStatus.setLotteryDateMinute(Integer.valueOf(minute));
+        lotteryStatusRepository.save(lotteryStatus);
     }
 
     private void sendTicket(Message message) {
@@ -144,6 +170,21 @@ public class TelegramBot extends TelegramLongPollingBot {
             sendMessage(chatId, "Время сообщения: " + message.getDate());
             log.info("Пользователь уже был");
         }
+    }
+
+
+    public void createLottery(long chatId){
+        sendMessage(chatId, "Для записи даты проведения розыгрыша одновременно введите команду /setlotterydata , дату: (день, месяц) и  время: (час, минута) проведения розыгрыша:\n"+
+                "К примеру дата 4 сентября 08:05 следует записать как:\n"+
+                "День - 04 \n"+
+                "Месяц - 09 \n"+
+                "Час - 08 \n"+
+                "Минута - 05 \n\n" +
+                "Тогда надо ввести\n" +
+                "/setlotteydata 04090805\n\n" +
+                "А дата 15 ноября 19:30 будет записана как \n" +
+                "/setlotterydata 15111930\n\n" +
+                "Между командой и датой надо поставить один пробел");
     }
 
 
