@@ -146,7 +146,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                     case "/deletelottery":
                         if (isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
-                            sendMessage(chatId, "Розыгрыш удален");
+                            deleteLottery(userId,chatId);
                         } else {
                             sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
                         }
@@ -155,7 +155,26 @@ public class TelegramBot extends TelegramLongPollingBot {
                         sendMessage(chatId, "Неизвестная команда, проверьте правильность написания в /help");
                 }
             }
+        }
+    }
 
+    private void deleteLottery(Long userId,Long chatId) {
+        if (lotteryStatusRepository.getActive() != null && lotteryStatusRepository.getActive()) {
+            LotteryStatus lotteryStatus = new LotteryStatus();
+            lotteryStatus.setLotteryId(1);
+            lotteryStatus.setLotteryActive(false);
+            lotteryStatus.setLotteryCreatorId(userId);
+            lotteryStatus.setLotteryDateDay(0);
+            lotteryStatus.setLotteryDateMonth(0);
+            lotteryStatus.setLotteryDateYear(0);
+            lotteryStatus.setLotteryDateHour(0);
+            lotteryStatus.setLotteryDateMinute(0);
+            lotteryStatus.setLotteryWinnerTicket(0);
+            lotteryStatusRepository.save(lotteryStatus);
+            lotteryRepository.deleteLottery();
+            sendMessage(chatId, "Розыгрыш удален");
+        } else {
+            sendMessage(chatId, "Розыгрыш не создан");
         }
     }
 
@@ -297,17 +316,24 @@ public class TelegramBot extends TelegramLongPollingBot {
             sendMessage(chatId, "Розыгрыш уже создан");
         } else {
             User user = update.getMessage().getFrom();
-            var userId = user.getId();
             LotteryStatus lotteryStatus = new LotteryStatus();
+            Lottery lottery = new Lottery();
             lotteryStatus.setLotteryId(1);
             lotteryStatus.setLotteryActive(true);
-            lotteryStatus.setLotteryCreatorId(userId);
+            lotteryStatus.setLotteryCreatorId(user.getId());
             lotteryStatus.setLotteryDateDay(0);
             lotteryStatus.setLotteryDateMonth(0);
+            lotteryStatus.setLotteryDateYear(0);
             lotteryStatus.setLotteryDateHour(0);
             lotteryStatus.setLotteryDateMinute(0);
             lotteryStatus.setLotteryWinnerTicket(0);
             lotteryStatusRepository.save(lotteryStatus);
+            if (lotteryRepository.findById(chatId).isEmpty()) {
+                lottery.setChatId(chatId);
+                lottery.setUserName(update.getMessage().getChat().getUserName());
+                lottery.setTicket(1);
+                lotteryRepository.save(lottery);
+            }
             sendMessage(chatId, "Для записи даты проведения розыгрыша одновременно введите команду /setdata , дату: (день, месяц, год) и  время: (час, минута) проведения розыгрыша:\n" +
                     "К примеру дата 4 сентября 2023 08:05 следует записать как:\n" +
                     "День - 04 \n" +
@@ -358,7 +384,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else {
                     var chatId = message.getChatId();
                     sendMessage(chatId, "Вы уже участвуете в розыгрыше, номер Вашего билета: " + lotteryRepository.getTicket(chatId));
-                    sendMessage(chatId, "Время сообщения: " + message.getDate());
                     log.info("Пользователь уже был");
                 }
             } else {

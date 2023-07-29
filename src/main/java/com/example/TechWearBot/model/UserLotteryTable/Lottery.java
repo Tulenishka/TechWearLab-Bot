@@ -11,9 +11,11 @@ public class Lottery {
     private Long chatId;
     private String userName;
     private Integer ticket;
+
     public Long getChatId() {
         return chatId;
     }
+
     public void setChatId(Long chatId) {
         this.chatId = chatId;
     }
@@ -24,7 +26,6 @@ public class Lottery {
 
     public void setUserName(String userName) {
         this.userName = userName;
-
     }
 
     public void setTicket(Integer ticket) {

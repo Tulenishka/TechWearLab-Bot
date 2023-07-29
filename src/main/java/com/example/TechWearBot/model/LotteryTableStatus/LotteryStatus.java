@@ -1,6 +1,5 @@
 package com.example.TechWearBot.model.LotteryTableStatus;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
