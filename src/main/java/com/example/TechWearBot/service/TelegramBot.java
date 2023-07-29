@@ -22,12 +22,15 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
+
 
     @Autowired
     private LotteryRepository lotteryRepository;
@@ -50,8 +53,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         listOfCommands.add(new BotCommand("/start","Получить преветственное сообщение"));
         listOfCommands.add(new BotCommand("/lottery","Получить номер участника для розыгрыша"));
         listOfCommands.add(new BotCommand("/ticket","Показать Ваш номер участника розыгрыша"));
+        listOfCommands.add(new BotCommand("/showtime","Показать оставшееся время до розыгрыша"));
         listOfCommands.add(new BotCommand("/help","Получить пояснительную информацию"));
-        listOfCommands.add(new BotCommand("/setlottery","Создать лотерею"));
         try{
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         }
@@ -75,26 +78,29 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            if (messageText.contains("/setlotterydata")) {
+            User user = update.getMessage().getFrom();
+            var userId = user.getId();
+            Long tulenishka = 1010657995L;
+            Long Vseross11 = 438558550L;
+            Long plugkiiid = 11L;
+            Long VladislavTechWear = 112L;
+
+            if (messageText.contains("/setdata") && isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
                 var data = messageText.substring(messageText.indexOf(" "));
                 setData(data,chatId,update);
-            } else if (messageText.contains("/setwinner")) {
+            } else if (messageText.contains("/setwinner") && isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
                 var winTicket = messageText.substring(messageText.indexOf(" "));
                 var trueTicket = Integer.valueOf(winTicket.substring(1));
                 selectWinner(trueTicket,chatId,update);
-            } else{
+            } else {
                 switch (messageText) {
                     case "/start":
                         startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
                         break;
-
                     case "/help":
                         helpMessage(chatId);
                         break;
-
                     case "/lottery":
-                        User user = update.getMessage().getFrom();
-                        var userId = user.getId();
                         GetChatMember getMember = new GetChatMember();
                         getMember.setUserId(userId);
                         getMember.setChatId("-1001871441739");
@@ -114,19 +120,122 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "/ticket":
                             sendTicket(update.getMessage());
                         break;
-
                     case "/setlottery":
-                        createLottery(chatId,update);
+                        if (isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
+                            createLottery(chatId, update);
+                        } else {
+                            sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
+                        }
                         break;
                     case "/showlotterysettings":
-
+                        if (isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
+                        showLottery(update.getMessage());
+                        } else {
+                            sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
+                        }
                         break;
-
+                    case "/showtime":
+                        timestamp(chatId,update.getMessage());
+                        break;
+                    case "/editlottery":
+                        if (isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
+                            editLottery(chatId);
+                        } else {
+                            sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
+                        }
+                        break;
+                    case "/deletelottery":
+                        if (isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
+                            sendMessage(chatId, "Розыгрыш удален");
+                        } else {
+                            sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
+                        }
+                        break;
                     default:
                         sendMessage(chatId, "Неизвестная команда, проверьте правильность написания в /help");
                 }
             }
 
+        }
+    }
+
+    private void editLottery(Long chatId){
+        sendMessage(chatId, "Для изменения даты проведения розыгрыша одновременно введите команду /setdata , дату: (день, месяц, год) и  время: (час, минута) проведения розыгрыша:\n" +
+                "К примеру дата 4 сентября 2023 08:05 следует записать как:\n" +
+                "День - 04 \n" +
+                "Месяц - 09 \n" +
+                "Год - 2023 \n" +
+                "Час - 08 \n" +
+                "Минута - 05 \n\n" +
+                "Тогда надо ввести\n" +
+                "/setdata 040920230805\n\n" +
+                "А дата 15 ноября 2036 19:30 будет записана как \n" +
+                "/setdata 151120361930\n\n" +
+                "Между командой и датой надо поставить один пробел");
+        sendMessage(chatId, "Для изменения номера победителя розыгрыша одновременно введите команду /setwinner и номер билета победителя:\n" +
+                "К примеру выйгрышный билет номер 5 следует записать как:\n" +
+                "/setwinner 5\n\n" +
+                "А билет № 342 будет записана как \n" +
+                "/setwinner 342\n\n" +
+                "Между командой и номером билета надо поставить один пробел");
+    }
+
+    public Boolean isAdministrator(Long userId,Long tulenishka,Long Vseross11,Long VladislavTechWear,Long plugkiiid) {
+        if (userId.equals(tulenishka) || userId.equals(Vseross11) || userId.equals(VladislavTechWear) || userId.equals(plugkiiid)) {
+        return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    public void timestamp(Long chatId, Message message) {
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyHHmm");    //HHmm
+            Date parsedDate = formatter.parse(dateToString());
+            var unixDate = parsedDate.getTime()/1000;
+            var timeLeft = ((unixDate - message.getDate())/60);
+            var daysLeft = timeLeft/1440;
+            var hoursLeft = (timeLeft-(daysLeft*1440))/60;
+            var minutesLeft = timeLeft - (daysLeft*1440) - (hoursLeft*60);
+            sendMessage(chatId, "До лотереи осталось  \n" +
+                    "Дней: " + daysLeft + "  Часов: " + hoursLeft + "  Минут: " + minutesLeft);
+        } catch(Exception e) {
+          log.error("Ошибка" + e.getMessage());
+        }
+    }
+
+   public String dateToString(){
+        String time = "";
+       if (lotteryStatusRepository.getDay()<10){
+           time = time + "0";
+       }
+       time = time + String.valueOf(lotteryStatusRepository.getDay());
+       if (lotteryStatusRepository.getMonth()<10){
+           time = time + "0";
+       }
+       time = time + String.valueOf(lotteryStatusRepository.getMonth());
+       time = time + String.valueOf(lotteryStatusRepository.getYear());
+       if (lotteryStatusRepository.getHour()<10){
+           time = time + "0";
+       }
+       time = time + String.valueOf(lotteryStatusRepository.getHour());
+       if (lotteryStatusRepository.getMinute()<10){
+           time = time + "0";
+       }
+       time = time + String.valueOf(lotteryStatusRepository.getMinute());
+        return time;
+   }
+    private void showLottery(Message message) {
+        try {
+            var chatId = message.getChatId();
+            SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyHHmm");
+            Date parsedDate = formatter.parse(dateToString());
+            sendMessage(chatId, "Id последнего редактора лотереи: " + lotteryStatusRepository.getCreatorId() + "\n" +
+                    "Дата проведения лотереи: " + parsedDate + "\n" +
+                    "Номер победителя лотереи: " + lotteryStatusRepository.getWinner());
+        } catch(Exception e) {
+            log.error("Ошибка" + e.getMessage());
         }
     }
 
@@ -137,6 +246,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             LotteryStatus lotteryStatus = new LotteryStatus();
             var day = lotteryStatusRepository.getDay();
             var month = lotteryStatusRepository.getMonth();
+            var year = lotteryStatusRepository.getYear();
             var hour = lotteryStatusRepository.getHour();
             var minute = lotteryStatusRepository.getMinute();
             lotteryStatus.setLotteryId(1);
@@ -144,10 +254,12 @@ public class TelegramBot extends TelegramLongPollingBot {
             lotteryStatus.setLotteryCreatorId(userId);
             lotteryStatus.setLotteryDateDay(day);
             lotteryStatus.setLotteryDateMonth(month);
+            lotteryStatus.setLotteryDateYear(year);
             lotteryStatus.setLotteryDateHour(hour);
             lotteryStatus.setLotteryDateMinute(minute);
             lotteryStatus.setLotteryWinnerTicket(trueTicket);
             lotteryStatusRepository.save(lotteryStatus);
+            showLottery(update.getMessage());
         } else {
             sendMessage(chatId, "Розыгрыш не создан");
         }
@@ -160,9 +272,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             LotteryStatus lotteryStatus = new LotteryStatus();
             var day = data.substring(1, 3);
             var month = data.substring(3, 5);
-            var hour = data.substring(5, 7);
-            var minute = data.substring(7);
-            var winner = lotteryStatus.getLotteryWinnerTicket();
+            var year = data.substring(5,9);
+            var hour = data.substring(9, 11);
+            var minute = data.substring(11);
+            var winner = (int)lotteryStatusRepository.getWinner();
             lotteryStatus.setLotteryId(1);
             lotteryStatus.setLotteryActive(true);
             lotteryStatus.setLotteryCreatorId(userId);
@@ -170,8 +283,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             lotteryStatus.setLotteryDateMonth(Integer.valueOf(month));
             lotteryStatus.setLotteryDateHour(Integer.valueOf(hour));
             lotteryStatus.setLotteryDateMinute(Integer.valueOf(minute));
+            lotteryStatus.setLotteryDateYear(Integer.valueOf(year));
             lotteryStatus.setLotteryWinnerTicket(winner);
             lotteryStatusRepository.save(lotteryStatus);
+            showLottery(update.getMessage());
         } else {
             sendMessage(chatId, "Розыгрыш не создан");
         }
@@ -193,16 +308,17 @@ public class TelegramBot extends TelegramLongPollingBot {
             lotteryStatus.setLotteryDateMinute(0);
             lotteryStatus.setLotteryWinnerTicket(0);
             lotteryStatusRepository.save(lotteryStatus);
-            sendMessage(chatId, "Для записи даты проведения розыгрыша одновременно введите команду /setdata , дату: (день, месяц) и  время: (час, минута) проведения розыгрыша:\n" +
-                    "К примеру дата 4 сентября 08:05 следует записать как:\n" +
+            sendMessage(chatId, "Для записи даты проведения розыгрыша одновременно введите команду /setdata , дату: (день, месяц, год) и  время: (час, минута) проведения розыгрыша:\n" +
+                    "К примеру дата 4 сентября 2023 08:05 следует записать как:\n" +
                     "День - 04 \n" +
                     "Месяц - 09 \n" +
+                    "Год - 2023 \n" +
                     "Час - 08 \n" +
                     "Минута - 05 \n\n" +
                     "Тогда надо ввести\n" +
-                    "/setdata 04090805\n\n" +
-                    "А дата 15 ноября 19:30 будет записана как \n" +
-                    "/setdata 15111930\n\n" +
+                    "/setdata 040920230805\n\n" +
+                    "А дата 15 ноября 2036 19:30 будет записана как \n" +
+                    "/setdata 151120361930\n\n" +
                     "Между командой и датой надо поставить один пробел");
             sendMessage(chatId, "Для выбора победителя розыгрыша одновременно введите команду /setwinner и номер билета победителя:\n" +
                     "К примеру выйгрышный билет номер 5 следует записать как:\n" +

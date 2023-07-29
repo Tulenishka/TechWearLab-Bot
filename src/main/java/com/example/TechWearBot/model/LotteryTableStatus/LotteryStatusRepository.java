@@ -15,6 +15,9 @@ public interface LotteryStatusRepository extends CrudRepository<LotteryStatus, L
     @Query(value = "select lottery_date_month from lottery_status where lottery_Id = 1", nativeQuery = true)
     int getMonth();
 
+    @Query(value = "select lottery_date_year from lottery_status where lottery_Id = 1", nativeQuery = true)
+    int getYear();
+
     @Query(value = "select lottery_date_hour from lottery_status where lottery_Id = 1", nativeQuery = true)
     int getHour();
 

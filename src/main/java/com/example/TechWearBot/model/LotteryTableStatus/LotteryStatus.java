@@ -20,6 +20,8 @@ public class LotteryStatus {
 
     private Integer lotteryDateMonth;
 
+    private Integer lotteryDateYear;
+
     private Integer lotteryDateHour;
 
     private Integer lotteryDateMinute;
@@ -66,6 +68,14 @@ public class LotteryStatus {
         this.lotteryDateMonth = lotteryDateMonth;
     }
 
+    public Integer getLotteryDateYear() {
+        return lotteryDateYear;
+    }
+
+    public void setLotteryDateYear(Integer lotteryDateYear) {
+        this.lotteryDateYear = lotteryDateYear;
+    }
+
     public Integer getLotteryDateHour() {
         return lotteryDateHour;
     }
@@ -98,6 +108,7 @@ public class LotteryStatus {
                 ", lotteryActive=" + lotteryActive +
                 ", lotteryDateDay=" + lotteryDateDay +
                 ", lotteryDateMonth=" + lotteryDateMonth +
+                ", lotteryDateYear=" + lotteryDateYear +
                 ", lotteryDateHour=" + lotteryDateHour +
                 ", lotteryDateMinute=" + lotteryDateMinute +
                 ", lotteryWinnerTicket=" + lotteryWinnerTicket +
