@@ -83,7 +83,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             Long tulenishka = 1010657995L;
             Long Vseross11 = 438558550L;
             Long plugkiiid = 11L;
-            Long VladislavTechWear = 112L;
+            Long VladislavTechWear = 5398823847L;
 
             if (messageText.contains("/setdata") && isAdministrator(userId,tulenishka,Vseross11,VladislavTechWear,plugkiiid)) {
                 var data = messageText.substring(messageText.indexOf(" "));
