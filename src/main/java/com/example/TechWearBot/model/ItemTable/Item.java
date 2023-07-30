@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 public class Item {
 
     @Id
-    private Long messageId;
+    private Integer messageId;
 
     private String itemType;
 
@@ -45,11 +45,11 @@ public class Item {
     private Boolean size45;
 
 
-    public Long getMessageId() {
+    public Integer getMessageId() {
         return messageId;
     }
 
-    public void setMessageId(Long messageId) {
+    public void setMessageId(Integer messageId) {
         this.messageId = messageId;
     }
 
