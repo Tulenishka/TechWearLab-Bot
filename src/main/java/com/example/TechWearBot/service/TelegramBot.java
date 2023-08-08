@@ -26,15 +26,16 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
-
 
     @Autowired
     private SizeRepository sizeRepository;
@@ -83,22 +84,26 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        long chatId = update.getMessage().getChatId();
         Long tulenishka = 1010657995L;
         Long Vseross11 = 438558550L;
         Long plugkiiid = 11L;
-        Long ryarusha = 1069173031L;
         Long VladislavTechWear = 5398823847L;
+        Long testChannel = -1001953170310L;
+        Long testGroup = -1001936189450L;
+        Long techWearLab = -1001871441739L;
 
-        if (chatId == -1001871441739L) {
-            saveMessage(tulenishka, update);
-        } else if (chatId == ryarusha) {
-            saveMessage(tulenishka,update);
-        } else {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            User user = update.getMessage().getFrom();
-            var userId = user.getId();
+
+        if (update.hasChannelPost()) {
+            if (Objects.equals(update.getChannelPost().getChatId(), techWearLab)) {
+                if (update.getChannelPost().getCaption() != null) {
+                    saveMessage(update);
+                }
+            }
+        } else if (update.hasMessage()){
+                String messageText = update.getMessage().getText();
+                User user = update.getMessage().getFrom();
+                var userId = user.getId();
+                var chatId = update.getMessage().getChatId();
                 if (messageText.contains("/setdata") && isAdministrator(userId, tulenishka, Vseross11, VladislavTechWear, plugkiiid)) {
                     var data = messageText.substring(messageText.indexOf(" "));
                     setData(data, chatId, update);
@@ -109,28 +114,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else {
                     switch (messageText) {
                         case "/start":
-                            startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                            startCommandReceived(chatId, update.getMessage().getChat().getFirstName(), tulenishka);
                             break;
                         case "/help":
                             helpMessage(chatId);
                             break;
                         case "/lottery":
-                            GetChatMember getMember = new GetChatMember();
-                            getMember.setUserId(userId);
-                            getMember.setChatId("-1001871441739");
-                            ChatMember theChatMember;
-                            try {
-                                theChatMember = execute(getMember);
-                                if ("left".equalsIgnoreCase(theChatMember.getStatus())) {
-                                    sendMessage(chatId, "Для участия в розыгрыше Вам необходимо подписаться на канал t.me/TechWearLab");
-                                } else {
-                                    registerLottery(update.getMessage());
-                                }
-                            } catch (TelegramApiException e) {
-                                log.error("Ошибка:" + e.getMessage());
-                            }
+                            callLottery(userId,techWearLab,chatId,update);
                             break;
-
                         case "/ticket":
                             sendTicket(update.getMessage());
                             break;
@@ -167,7 +158,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             break;
                         case "/sendforward":
                             if (isAdministrator(userId, tulenishka, Vseross11, VladislavTechWear, plugkiiid)) {
-                                forwardMessage(tulenishka,ryarusha,update);
+                                forwardMessage(tulenishka, update);
                             } else {
                                 sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
                             }
@@ -176,31 +167,117 @@ public class TelegramBot extends TelegramLongPollingBot {
                             sendMessage(chatId, "Неизвестная команда, проверьте правильность написания в /help");
                     }
                 }
-            }
+            } else if (update.hasCallbackQuery()){
+
         }
     }
 
-    private void forwardMessage(Long tulenishka, Long ryarusha, Update update){
-        var messageId = update.getMessage().getMessageId();
+    private void callLottery(Long userId, Long techWearLab, Long chatId, Update update){
+        GetChatMember getMember = new GetChatMember();
+        getMember.setUserId(userId);
+        getMember.setChatId(techWearLab);
+        ChatMember theChatMember;
+        try {
+            theChatMember = execute(getMember);
+            if ("left".equalsIgnoreCase(theChatMember.getStatus())) {
+                sendMessage(chatId, "Для участия в розыгрыше Вам необходимо подписаться на канал t.me/TechWearLab");
+            } else {
+                registerLottery(update.getMessage());
+            }
+        } catch (TelegramApiException e) {
+            log.error("Ошибка:" + e.getMessage());
+        }
+    }
+    private void forwardMessage(Long techWearLab, Update update) {
         ForwardMessage forwardMessage = new ForwardMessage();
-        forwardMessage.setFromChatId(ryarusha);
-        forwardMessage.setChatId(tulenishka);
-        forwardMessage.setMessageId(1818);
+        forwardMessage.setFromChatId(techWearLab);
+        forwardMessage.setChatId(update.getMessage().getChatId());
+        forwardMessage.setMessageId(1074);
         try {
             execute(forwardMessage);
-        }
-        catch (TelegramApiException e){
+        } catch (TelegramApiException e) {
             log.error("Ошибка:" + e.getMessage());
         }
     }
 
-    private void saveMessage(Long tulenishka, Update update){
-        var messageId = update.getMessage().getMessageId();
+
+    private void saveMessage(Update update){
+        var messageId = update.getChannelPost().getMessageId();
         Item item = new Item();
         item.setMessageId(messageId);
-        item.setItemType("Верх");
+        String postText = update.getChannelPost().getCaption();
+        if (postText.contains("#S")){
+            item.setSizeS(true);}
+        if (postText.contains("#M")){
+            item.setSizeM(true);
+        }
+        if (postText.contains("#L")){
+            item.setSizeL(true);
+        }
+        if (postText.contains("#XL")){
+            item.setSizeXL(true);
+        }
+        if (postText.contains("#XXl")){
+            item.setSizeXXL(true);
+        }
+        if (postText.contains("#36")){
+            item.setSize36(true);
+        }
+        if (postText.contains("#36")){
+            item.setSize36(true);
+        }
+        if (postText.contains("#37")){
+            item.setSize37(true);
+        }
+        if (postText.contains("#38")){
+            item.setSize38(true);
+        }
+        if (postText.contains("#39")){
+            item.setSize39(true);
+        }
+        if (postText.contains("#40")){
+            item.setSize40(true);
+        }
+        if (postText.contains("#41")){
+            item.setSize41(true);
+        }
+        if (postText.contains("#42")){
+            item.setSize42(true);
+        }
+        if (postText.contains("#43")){
+            item.setSize43(true);
+        }
+        if (postText.contains("#44")){
+            item.setSize44(true);
+        }
+        if (postText.contains("#45")){
+            item.setSize45(true);
+        }
+        if (postText.contains("#кроссовки") || postText.contains("#тапочки") || postText.contains("#сандали") || postText.contains("#сланцы")
+                || postText.contains("#ботинки") || postText.contains("#лоферы") || postText.contains("#шлепки") || postText.contains("#тапки")
+                || postText.contains("#шлёпки")){
+            item.setItemType("shoes");
+        } else if (postText.contains("#худи") || postText.contains("#свитшот") || postText.contains("#ветровка") || postText.contains("#куртка")
+                || postText.contains("#лонгслив") || postText.contains("#пуховик") || postText.contains("#парка") || postText.contains("#кофта")
+                || postText.contains("#кардиган") || postText.contains("#майка") || postText.contains("#термо") || postText.contains("#футболка")
+                || postText.contains("#жилетка") || postText.contains("#анорак") || postText.contains("#зипка") || postText.contains("#халфзип")
+                || postText.contains("#дождевик") || postText.contains("#плащ") || postText.contains("#водолазка") || postText.contains("#бомбер")
+                || postText.contains("#шерпа") || postText.contains("#рубашка") || postText.contains("#пуловер") || postText.contains("#толстовка")
+                || postText.contains("#поло")){
+            item.setItemType("top");
+        } else if (postText.contains("#штаны") || postText.contains("#шорты") || postText.contains("#джоггеры") || postText.contains("#джинсы")
+                || postText.contains("#подтрусники") || postText.contains("#боксеры")){
+            item.setItemType("bot");
+        } else if (postText.contains("сумка") || postText.contains("#клатч") || postText.contains("#перчатки") || postText.contains("#духи")
+                || postText.contains("#часы") || postText.contains("#рюкзак") || postText.contains("#сумка") || postText.contains("#панама")
+                || postText.contains("#кошелек") || postText.contains("#кошелёк") || postText.contains("#кепка") || postText.contains("#бандана")
+                || postText.contains("#мяч") || postText.contains("#лего") || postText.contains("#чемодан") || postText.contains("#шапка")
+                || postText.contains("#снуд") || postText.contains("#балаклава") || postText.contains("#ремень") || postText.contains("#очки")
+                || postText.contains("#зонт") || postText.contains("#маска")){
+            item.setItemType("specific");
+        }
         itemRepository.save(item);
-        sendMessage(tulenishka, "Вещь сохранена: ");
+        log.info("Сохранена новая вещь: " + item.toString());
     }
 
 
@@ -225,24 +302,31 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void editLottery(Long chatId){
-        sendMessage(chatId, "Для изменения даты проведения розыгрыша одновременно введите команду /setdata , дату: (день, месяц, год) и  время: (час, минута) проведения розыгрыша:\n" +
-                "К примеру дата 4 сентября 2023 08:05 следует записать как:\n" +
-                "День - 04 \n" +
-                "Месяц - 09 \n" +
-                "Год - 2023 \n" +
-                "Час - 08 \n" +
-                "Минута - 05 \n\n" +
-                "Тогда надо ввести\n" +
-                "/setdata 040920230805\n\n" +
-                "А дата 15 ноября 2036 19:30 будет записана как \n" +
-                "/setdata 151120361930\n\n" +
-                "Между командой и датой надо поставить один пробел");
-        sendMessage(chatId, "Для изменения номера победителя розыгрыша одновременно введите команду /setwinner и номер билета победителя:\n" +
-                "К примеру выйгрышный билет номер 5 следует записать как:\n" +
-                "/setwinner 5\n\n" +
-                "А билет № 342 будет записана как \n" +
-                "/setwinner 342\n\n" +
-                "Между командой и номером билета надо поставить один пробел");
+        sendMessage(chatId, """
+                Для изменения даты проведения розыгрыша одновременно введите команду /setdata , дату: (день, месяц, год) и  время: (час, минута) проведения розыгрыша:
+                К примеру дата 4 сентября 2023 08:05 следует записать как:
+                День - 04\s
+                Месяц - 09\s
+                Год - 2023\s
+                Час - 08\s
+                Минута - 05\s
+
+                Тогда надо ввести
+                /setdata 040920230805
+
+                А дата 15 ноября 2036 19:30 будет записана как\s
+                /setdata 151120361930
+
+                Между командой и датой надо поставить один пробел""");
+        sendMessage(chatId, """
+                Для изменения номера победителя розыгрыша одновременно введите команду /setwinner и номер билета победителя:
+                К примеру выйгрышный билет номер 5 следует записать как:
+                /setwinner 5
+
+                А билет № 342 будет записана как\s
+                /setwinner 342
+
+                Между командой и номером билета надо поставить один пробел""");
     }
 
     public Boolean isAdministrator(Long userId,Long tulenishka,Long Vseross11,Long VladislavTechWear,Long plugkiiid) {
@@ -414,6 +498,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void registerLottery(Message message) {
             if (lotteryStatusRepository.getActive() != null && lotteryStatusRepository.getActive()) {
+
                 if (lotteryRepository.findById(message.getChatId()).isEmpty()) {
                     var chatId = message.getChatId();
                     var chat = message.getChat();
@@ -436,17 +521,16 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
 
-
-    private void startCommandReceived(long chatId, String name) {
+    private void startCommandReceived(long chatId, String name, Long tulenishka) {
         String answer = "Ну привет, " + name + ", наконец-то кто-то дробрался пощупать бота";
-        sendMessage(chatId, answer);
+        sendMessage(tulenishka, answer);
         log.info("Приветственное сообщение доставлено:" + name);
     }
+
     private void helpMessage(long chatId){
         sendMessage(chatId,helpText);
         log.info("Пояснительная информация доставлена.");
     }
-
 
     private void sendMessage(long chatId, String textToSend){
         SendMessage message = new SendMessage();
