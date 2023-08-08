@@ -9,6 +9,8 @@ import com.example.TechWearBot.model.LotteryTableStatus.LotteryStatusRepository;
 import com.example.TechWearBot.model.UserLotteryTable.Lottery;
 import com.example.TechWearBot.model.UserLotteryTable.LotteryRepository;
 import com.example.TechWearBot.model.UserSizeTable.SizeRepository;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -114,7 +116,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else {
                     switch (messageText) {
                         case "/start":
-                            startCommandReceived(chatId, update.getMessage().getChat().getFirstName(), tulenishka);
+                            startCommand(chatId, update.getMessage().getChat().getFirstName());
                             break;
                         case "/help":
                             helpMessage(chatId);
@@ -163,12 +165,56 @@ public class TelegramBot extends TelegramLongPollingBot {
                                 sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
                             }
                             break;
+                        case "/getitems":
+                            getItemKeyboard(chatId);
+                            break;
                         default:
                             sendMessage(chatId, "Неизвестная команда, проверьте правильность написания в /help");
                     }
                 }
             } else if (update.hasCallbackQuery()){
+            
+        }
+    }
 
+
+
+    private void getItemKeyboard(Long chatId){
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("Подборку каких вещей вы хотели бы получить?");
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+
+        List<InlineKeyboardButton> FirstRowInLine = new ArrayList<>();
+        var topButton = new InlineKeyboardButton();
+        topButton.setText("Одежда верх");
+        topButton.setCallbackData("top");
+        var shoesButton = new InlineKeyboardButton();
+        shoesButton.setText("Обувь");
+        shoesButton.setCallbackData("shoes");
+        FirstRowInLine.add(topButton);
+        FirstRowInLine.add(shoesButton);
+        rowsInLine.add(FirstRowInLine);
+
+        List<InlineKeyboardButton> SecondRowInLine = new ArrayList<>();
+        var botButton = new InlineKeyboardButton();
+        botButton.setText("Одежда низ");
+        botButton.setCallbackData("bot");
+        var specificButton = new InlineKeyboardButton();
+        specificButton.setText("Аксессуары");
+        specificButton.setCallbackData("specific");
+        SecondRowInLine.add(botButton);
+        SecondRowInLine.add(specificButton);
+        rowsInLine.add(SecondRowInLine);
+
+        markupInLine.setKeyboard(rowsInLine);
+        message.setReplyMarkup(markupInLine);
+        try{
+            execute(message);
+        }
+        catch (TelegramApiException e){
+            log.error("Ошибка:" + e.getMessage());
         }
     }
 
@@ -188,6 +234,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Ошибка:" + e.getMessage());
         }
     }
+
     private void forwardMessage(Long techWearLab, Update update) {
         ForwardMessage forwardMessage = new ForwardMessage();
         forwardMessage.setFromChatId(techWearLab);
@@ -199,7 +246,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Ошибка:" + e.getMessage());
         }
     }
-
 
     private void saveMessage(Update update){
         var messageId = update.getChannelPost().getMessageId();
@@ -279,7 +325,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         itemRepository.save(item);
         log.info("Сохранена новая вещь: " + item.toString());
     }
-
 
     private void deleteLottery(Long userId,Long chatId) {
         if (lotteryStatusRepository.getActive() != null && lotteryStatusRepository.getActive()) {
@@ -521,9 +566,9 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
 
-    private void startCommandReceived(long chatId, String name, Long tulenishka) {
+    private void startCommand(long chatId, String name) {
         String answer = "Ну привет, " + name + ", наконец-то кто-то дробрался пощупать бота";
-        sendMessage(tulenishka, answer);
+        sendMessage(chatId, answer);
         log.info("Приветственное сообщение доставлено:" + name);
     }
 
