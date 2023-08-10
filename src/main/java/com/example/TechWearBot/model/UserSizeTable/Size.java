@@ -15,6 +15,8 @@ public class Size {
 
     private String outfitSize;
 
+    private String lastCompilation;
+
     public Long getChatId() {
         return chatId;
     }
@@ -39,12 +41,21 @@ public class Size {
         this.outfitSize = outfitSize;
     }
 
+    public String getLastCompilation() {
+        return lastCompilation;
+    }
+
+    public void setLastCompilation(String lastCompilation) {
+        this.lastCompilation = lastCompilation;
+    }
+
     @Override
     public String toString() {
         return "Size{" +
                 "chatId=" + chatId +
                 ", bootSize=" + bootSize +
                 ", outfitSize='" + outfitSize + '\'' +
+                ", lastCompilation='" + lastCompilation + '\'' +
                 '}';
     }
 }
