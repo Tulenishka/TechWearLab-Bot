@@ -50,6 +50,17 @@ public class TelegramBot extends TelegramLongPollingBot {
     private LotteryStatusRepository lotteryStatusRepository;
     final BotConfig config;
 
+    static final String adminText = """
+            Список администраторких команд:\s
+
+            /setlottery - Создание нового розыгрыша\s
+            
+            /editlottery - Редактирование настроек лотереи\s
+            
+            /deletelottery - Удаление существующей лотереи\s
+            
+            /sendwinner - Отправление сообщения в канал об окончании розыгрыша и победном билете\s
+            """;
     static final String helpText = """
             Этот бот поможет Вам подобрать товар или принять участие в розыгрыше от Techwear Lab.
 
@@ -171,6 +182,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                         }
                         case "/getitems" -> getItemKeyboard(chatId);
                         case "/changesize" -> changeSize(chatId);
+                        case "/sendwinner" -> sendWinMessage(techWearLab);
+                        case "/adminlist" -> adminList(chatId,adminText);
                         default -> sendMessage(chatId, "Неизвестная команда, проверьте правильность написания в /help");
                     }
                 }
@@ -244,6 +257,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                 default -> sendCompilation(chatId, callBackData);
             }
         }
+    }
+
+    private void adminList(Long chatId, String adminText){
+        sendMessage(chatId, adminText);
+    }
+
+    private void sendWinMessage(Long techWearLab){
+        sendMessage(techWearLab, "Розыгрыш окончен, выйгрышный билет : " + lotteryStatusRepository.getWinner() + " Поздравляем!");
     }
 
     private void setTopSize(Long chatId){
