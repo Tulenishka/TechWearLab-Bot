@@ -183,7 +183,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                         case "/getitems" -> getItemKeyboard(chatId);
                         case "/changesize" -> changeSize(chatId);
                         case "/sendwinner" -> sendWinMessage(techWearLab);
-                        case "/adminlist" -> adminList(chatId,adminText);
+                        case "/adminlist" -> {
+                            if (isAdministrator(userId, tulenishka, Vseross11, VladislavTechWear, plugkiiid)) {
+                                adminList(chatId,adminText);
+                            } else {
+                                sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
+                            }
+                        }
                         default -> sendMessage(chatId, "Неизвестная команда, проверьте правильность написания в /help");
                     }
                 }
