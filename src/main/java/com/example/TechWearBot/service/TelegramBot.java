@@ -121,14 +121,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasChannelPost()) {
             if (Objects.equals(update.getChannelPost().getChatId(), techWearLab)) {
                 if (update.getChannelPost().getCaption() != null) {
-                    System.out.println(update.getChannelPost().getMessageId());
                     saveMessage(update.getChannelPost().getMessageId(),update.getChannelPost().getCaption());
                 }
             }
         } else if (update.hasEditedChannelPost()) {
             if (Objects.equals(update.getEditedChannelPost().getChatId(), techWearLab)) {
                 if (update.getEditedChannelPost().getCaption() != null) {
-                    System.out.println(update.getEditedChannelPost().getMessageId());
                     saveMessage(update.getEditedChannelPost().getMessageId(), update.getEditedChannelPost().getCaption());
                 }
             }
@@ -185,7 +183,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         case "/sendwinner" -> sendWinMessage(techWearLab);
                         case "/adminlist" -> {
                             if (isAdministrator(userId, tulenishka, Vseross11, VladislavTechWear, plugkiiid)) {
-                                adminList(chatId,adminText);
+                                adminList(chatId);
                             } else {
                                 sendMessage(chatId, "Для выполнения этой команды Вы должны обладать правами администратора");
                             }
@@ -265,8 +263,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void adminList(Long chatId, String adminText){
-        sendMessage(chatId, adminText);
+    private void adminList(Long chatId){
+        sendMessage(chatId, TelegramBot.adminText);
     }
 
     private void sendWinMessage(Long techWearLab){
